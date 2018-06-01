@@ -1,0 +1,10 @@
+name: muon-telescope
+channels:
+- anaconda
+- cogsci
+- defaults
+dependencies:
+- jupyter
+- pygame
+- pyopengl
+- numpy
