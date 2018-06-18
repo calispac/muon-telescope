@@ -46,7 +46,7 @@ def main():
 
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
 
-    glTranslatef(0.0,0.0, -5)
+    glTranslatef(0.0, 0, -5)
 
     while True:
         for event in pygame.event.get():
@@ -54,7 +54,7 @@ def main():
                 pygame.quit()
                 quit()
 
-        glRotatef(1, 3, 1, 1)
+        glRotatef(1, 2, 1, 2)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         Cube()
         pygame.display.flip()
