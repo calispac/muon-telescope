@@ -1,76 +1,111 @@
 from vpython import *
 import numpy as np
+import pandas as pd
 
 
-def layer(layer_position, layer_angle=0, bar_width=1, bar_height=1,
-          bar_length=32*2, bar_spacing=1, n_bars=32, c=color.white, opacity=0.5):
+def coordinates(arrow_length=800):
 
-    bars = [None]*n_bars
+    pointer_x = arrow(pos=vector(0, 0, 0), axis=vector(arrow_length, 0, 0),
+                    shaftwidth=1)
+    pointer_y = arrow(pos=vector(0, 0, 0), axis=vector(0, arrow_length, 0),
+                    shaftwidth=1)
+    pointer_z = arrow(pos=vector(0, 0, 0), axis=vector(0, 0, arrow_length),
+                    shaftwidth=1)
+
+    return pointer_x, pointer_y, pointer_z
+
+
+def layer(layer_position, bar_width=1, bar_height=1,
+          bar_length=32*2, bar_spacing=1, n_bars=32, opacity=0.8):
+
+    bars_x = []
+    bars_y = []
     size = vector(bar_length, bar_height, bar_width)
 
-    axis = vector(np.cos(layer_angle), 0., np.sin(layer_angle))
+    axis_x = vector(1, 0, 0)
+    axis_y = vector(0, 0, 1)
 
-    for bar_id in range(len(bars)):
+    length = (bar_width + bar_spacing) * n_bars
 
-        pos = layer_position + vector(0, 0, (bar_width + bar_spacing) * bar_id)
+    for bar_id in range(n_bars):
 
-        bars[bar_id] = box(pos=pos, size=size, color=c, opacity=opacity)
+        pos = (bar_width + bar_spacing) * bar_id
 
-    bars_object = compound(bars)
-    bars_object.axis = axis
-    return bars
+        pos_x = layer_position + vector(0, 0, pos)
+        pos_y = layer_position + vector(pos - length / 2,
+                                        bar_height, length / 2)
 
+        bars_x.append(box(pos=pos_x, size=size, opacity=opacity, axis=axis_x))
+        bars_y.append(box(pos=pos_y, size=size, opacity=opacity, axis=axis_y))
 
-bar_width = 10
-bar_height = 7.5
-bar_length = 350
-bar_spacing = 0.1
-
-layer_spacing = 3 * bar_height
+    return bars_x, bars_y
 
 
-n_bars = 32
-n_layers = 5
+def detector(n_layers, layer_spacing, detector_base, bar_width, bar_height,
+             bar_length, bar_spacing, n_bars):
 
-center_y = (layer_spacing * n_layers) / 2
-center_z = ((bar_spacing + bar_width) * n_bars) / 2
+    bars_x = []
+    bars_y = []
 
-scene.fullscreen =True
-# scene.stereo = 'redcyan'
+    for i in range(n_layers):
 
-table_height = 30
-detector_base = vector(0, table_height + 5, 0)
+        y = i * layer_spacing
+        pos = detector_base + vector(0, y, - center_z)
+        bar_x, bar_y = layer(pos, bar_width=bar_width, bar_height=bar_height,
+              bar_length=bar_length, bar_spacing=bar_spacing, n_bars=n_bars)
 
-for i in range(n_layers):
+        bars_x.append(bar_x)
+        bars_y.append(bar_y)
 
-    y = i * layer_spacing
-    pos = detector_base + vector(0, y, - center_z)
-    layer(pos, bar_width=bar_width, bar_height=bar_height,
-          bar_length=bar_length, bar_spacing=bar_spacing, n_bars=n_bars)
-    layer(pos + vector(0, bar_height, 0), layer_angle=np.pi/2,
-          bar_width=bar_width, bar_height=bar_height,
-          bar_length=bar_length, bar_spacing=bar_spacing, n_bars=n_bars,
-          c=color.white
-          )
+    return bars_x, bars_y
 
 
-pointer = arrow(pos=vector(0, 0, 0), axis=vector(800, 0, 0), shaftwidth=1)
-pointer = arrow(pos=vector(0, 0, 0), axis=vector(0, 800, 0), shaftwidth=1)
-pointer = arrow(pos=vector(0, 0, 0), axis=vector(0, 0, 800), shaftwidth=1)
+if __name__ == '__main__':
 
+    bar_width = 10
+    bar_height = 7.5
+    bar_length = 350
+    bar_spacing = 0.1
 
-table_center = vector(0, 0, 0)
+    layer_spacing = 3 * bar_height
 
-table = box(pos=table_center,
-            size=vector(center_z*4, table_height, center_z*4),
-            texture=textures.wood,
-            )
+    n_bars = 32
+    n_layers = 5
 
-track = curve(vector(-1000, 1000, 0), vector(1000, -1000,0), color=color.red)
+    center_y = (layer_spacing * n_layers) / 2
+    center_z = ((bar_spacing + bar_width) * n_bars) / 2
 
+    scene.waitfor("redraw")
 
-print(track.point(0), track.point(1))
+    scene.fullscreen =True
+    scene.visible = False
+    scene.waitfor("draw_complete")
+    # scene.stereo = 'redcyan'
 
-cosmic_muon = sphere(make_trail=True, trail_type="points",
-              interval=10, retain=50, color=color.red)
+    table_height = 30
+    detector_base = vector(0, table_height + 5, 0)
 
+    bars_x, bars_y = detector(n_layers, layer_spacing, detector_base, bar_width,
+                    bar_height, bar_length, bar_spacing, n_bars)
+    coordinates()
+
+    table_center = vector(0, 0, 0)
+
+    table = box(pos=table_center,
+                size=vector(center_z*4, table_height, center_z*4),
+                texture=textures.wood,
+                )
+
+    track = curve(vector(0, 800, 0), vector(0, -800, 0), color=color.red)
+
+    # cosmic_muon = sphere(make_trail=True, trail_type="points",
+    #              interval=10, retain=50, color=color.red)
+
+    hits = [(0, 0, 0), (4, 12, 2), (31, 12, 4)]
+
+    for x, y, z in hits:
+
+        bars_x[z][x].color = color.green
+        bars_y[z][y].color = color.green
+
+    scene.visible = True

@@ -3,10 +3,15 @@ channels:
 - anaconda
 - cogsci
 - defaults
+- nlesc
 - vpython
 dependencies:
 - jupyter
-- pygame
-- pyopengl
 - numpy
+- pandas
+- python=3.4
+- pyopengl
+- root_numpy
 - vpython
+- pip:
+  - git+https://github.com/scikit-hep/root_pandas.git#egg=root_pandas
