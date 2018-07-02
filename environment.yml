@@ -9,9 +9,9 @@ dependencies:
 - jupyter
 - numpy
 - pandas
-- python=3.4
-- pyopengl
-- root_numpy
+- python=3.5
+# - pyopengl
+# - root_numpy
 - vpython
-- pip:
-  - git+https://github.com/scikit-hep/root_pandas.git#egg=root_pandas
+# - pip:
+#  - git+https://github.com/scikit-hep/root_pandas.git#egg=root_pandas

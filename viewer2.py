@@ -96,7 +96,7 @@ if __name__ == '__main__':
                 texture=textures.wood,
                 )
 
-    track = curve(vector(0, 800, 0), vector(0, -800, 0), color=color.red)
+    track = curve(vector(800, 800, 0), vector(-800, -800, 0), color=color.red)
 
     # cosmic_muon = sphere(make_trail=True, trail_type="points",
     #              interval=10, retain=50, color=color.red)
