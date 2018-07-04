@@ -150,14 +150,15 @@ if __name__ == '__main__':
 
         pos = [(scalled_hits[i, 0], a[i], scalled_hits[i, 1]) for i in range(len(scalled_hits))]
 
-        track = curve(pos=pos, color=color.red)
+        # track = curve(pos=pos, color=color.red)
 
         scene.visible = True
 
-        input()
+        time.sleep(4)
 
         scene.visible = False
-        track.visible = False
+        # track.visible = False
+
         for x, y, z in hits:
 
             bars_x[z][x].color = color.white
@@ -165,6 +166,3 @@ if __name__ == '__main__':
 
         scene.visible = True
 
-
-
-        time.sleep(1)
