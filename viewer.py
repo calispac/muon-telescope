@@ -102,67 +102,67 @@ if __name__ == '__main__':
     # cosmic_muon = sphere(make_trail=True, trail_type="points",
     #              interval=10, retain=50, color=color.red)
 
-    for hits in read.event_stream('data/visualPythonIn.txt'):
-        n_hits = 2
+    green = vector(163/255, 235/255, 12/255)
 
-        #hits = [[np.random.randint(0, 32), np.random.randint(0, 32),
-        #         np.random.randint(0, 5)] for i in range(n_hits)]
+    while True:
 
-        hits = np.array(hits)
+        for hits in read.event_stream('data/fake_data.txt'):
 
-        scene.visible = False
-        for x, y, z in hits:
+            hits = np.array(hits)
 
-            print(x, y, z)
+            scene.visible = False
+            for x, y, z in hits:
 
-            bars_x[z][x].color = color.green
-            bars_y[z][y].color = color.green
+                print(x, y, z)
 
-        regressor = LinearRegression()
+                bars_x[z][x].color = green
+                bars_y[z][y].color = green
 
-        scalled_hits = hits.copy()
+            regressor = LinearRegression()
 
-        print(hits)
-        # permutation = [0, 2, 1]
-        # scalled_hits = scalled_hits[:, permutation]
-        print(scalled_hits)
+            scalled_hits = hits.copy()
 
-        scalled_hits[:, 0] = (scalled_hits[:, 0] - n_bars / 2) * (bar_width + bar_spacing)
-        scalled_hits[:, 1] = (scalled_hits[:, 1] - n_bars / 2) * (bar_width + bar_spacing)
-        scalled_hits[:, 2] = scalled_hits[:, 2] * (bar_height + layer_spacing) + table_height + space_table_detector
-        print(scalled_hits)
+            print(hits)
+            # permutation = [0, 2, 1]
+            # scalled_hits = scalled_hits[:, permutation]
+            print(scalled_hits)
 
-        regressor.fit(scalled_hits[:, :1], scalled_hits[:, 2])
+            scalled_hits[:, 0] = (scalled_hits[:, 0] - n_bars / 2) * (bar_width + bar_spacing)
+            scalled_hits[:, 1] = (scalled_hits[:, 1] - n_bars / 2) * (bar_width + bar_spacing)
+            scalled_hits[:, 2] = scalled_hits[:, 2] * (bar_height + layer_spacing) + table_height + space_table_detector
+            print(scalled_hits)
 
-        a = regressor.predict(scalled_hits[:, :1])
+            regressor.fit(scalled_hits[:, :1], scalled_hits[:, 2])
 
-        print(a)
+            a = regressor.predict(scalled_hits[:, :1])
 
-        """
-        bottom_point = np.argmin(a)
-        top_point = np.argmax(a)
+            print(a)
 
-        scalled_hits[bottom_point] = scalled_hits[bottom_point]
-        scalled_hits[top_point] = scalled_hits[top_point]
+            """
+            bottom_point = np.argmin(a)
+            top_point = np.argmax(a)
+    
+            scalled_hits[bottom_point] = scalled_hits[bottom_point]
+            scalled_hits[top_point] = scalled_hits[top_point]
+    
+            scalled_hits = scalled_hits[[bottom_point, top_point]]
+            """
 
-        scalled_hits = scalled_hits[[bottom_point, top_point]]
-        """
+            pos = [(scalled_hits[i, 0], a[i], scalled_hits[i, 1]) for i in range(len(scalled_hits))]
 
-        pos = [(scalled_hits[i, 0], a[i], scalled_hits[i, 1]) for i in range(len(scalled_hits))]
+            # track = curve(pos=pos, color=color.red)
 
-        # track = curve(pos=pos, color=color.red)
+            scene.visible = True
 
-        scene.visible = True
+            time.sleep(4)
 
-        time.sleep(4)
+            scene.visible = False
+            # track.visible = False
 
-        scene.visible = False
-        # track.visible = False
+            for x, y, z in hits:
 
-        for x, y, z in hits:
+                bars_x[z][x].color = color.white
+                bars_y[z][y].color = color.white
 
-            bars_x[z][x].color = color.white
-            bars_y[z][y].color = color.white
-
-        scene.visible = True
+            scene.visible = True
 
