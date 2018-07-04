@@ -1,17 +1,28 @@
-from root_numpy import root2array
-import ROOT
 
-def read(file):
 
-    f = ROOT.TFile(file, 'read')
+def event_stream(filename):
 
-    print(f.ls())
-    print(f.Print())
-    print(f)
+    with open(filename) as file:
 
-    t = f.Get('FEB_1')
+        for line in file.readlines():
 
-    print(t.Print())
+            event = []
+            hit = []
+
+            for i, string in enumerate(line.split()):
+
+                hit.append(int(string))
+
+                if i % 3 == 2 and i != 0:
+                    hit = tuple(hit)
+                    event.append(hit)
+                    hit = []
+
+            yield event
+
 
 if __name__ == '__main__':
-    read('data/25May_3_ON_MCR0_T2K_beamline_trigger_beam60us_neutrinos_ON_histo.root')
+
+    for event in event_stream('data/visualPythonIn.txt'):
+
+        print(event)

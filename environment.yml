@@ -10,6 +10,7 @@ dependencies:
 - numpy
 - pandas
 - python=3.5
+- scikit-learn
 # - pyopengl
 # - root_numpy
 - vpython
