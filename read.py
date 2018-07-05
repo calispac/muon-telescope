@@ -8,17 +8,25 @@ def event_stream(filename):
 
             event = []
             hit = []
+            time = 0
 
             for i, string in enumerate(line.split()):
 
-                hit.append(int(string))
+                if i == 0:
 
-                if i % 3 == 2 and i != 0:
-                    hit = tuple(hit)
-                    event.append(hit)
-                    hit = []
+                    time = float(string)
 
-            yield event
+                else:
+
+                    hit.append(int(string))
+
+                    if i % 3 == 0 and i != 0:
+
+                        hit = tuple(hit)
+                        event.append(hit)
+                        hit = []
+
+            yield event, time
 
 
 if __name__ == '__main__':

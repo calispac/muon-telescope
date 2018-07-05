@@ -138,9 +138,9 @@ if __name__ == '__main__':
 
     TRACK_VISIBLE = True
     PAUSED = False
-    FRAME_RATE = 3
+    FRAME_RATE = 1
 
-    filename = 'data/real_data_4.txt'
+    filename = 'data/real_data_7.txt'
 
     center_y = (layer_spacing * n_layers) / 2
     center_z = ((bar_spacing + bar_width) * n_bars) / 2
@@ -157,11 +157,11 @@ if __name__ == '__main__':
 
         elif event.key == 'down':
 
-            FRAME_RATE += 1
+            FRAME_RATE = FRAME_RATE * 1.25
 
         elif event.key == 'up':
 
-            FRAME_RATE -= 0.5
+            FRAME_RATE = FRAME_RATE * 0.75
             FRAME_RATE = max(0, FRAME_RATE)
 
         elif len(event.key):
@@ -186,7 +186,7 @@ if __name__ == '__main__':
 
     bars_x, bars_y = detector(n_layers, layer_spacing, detector_base, bar_width,
                     bar_height, bar_length, bar_spacing, n_bars, opacity)
-    coordinates()
+    # coordinates()
 
     table_center = vector(0, 0, 0)
 
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     histogram_2 = graph(xtitle='intervalle de temps [secondes]',
                         ytitle='compte', align='right')
 
-    bins_time = np.linspace(0, 5*60, num=100)
+    bins_time = np.linspace(0, 5, num=100)
     count_time = np.zeros(len(bins_time) - 1)
     bars_time = gvbars(delta=bins_time[1]-bins_time[0], color=color.blue,
                        graph=histogram_2)
@@ -222,12 +222,11 @@ if __name__ == '__main__':
 
         for i, hits in enumerate(read.event_stream(filename=filename)):
 
-            hits = np.array(hits)
+            new_time = hits[1]
+            hits = np.array(hits[0])
             hits[:, 0] = hits[:, 0] + 8
             hits[:, 1] = hits[:, 1] - 8
             hits[:, 2] = hits[:, 2] + 1
-
-            new_time = i
 
             phrase = 'Coordonnées : \n'
 
@@ -273,7 +272,8 @@ if __name__ == '__main__':
             bars_theta.data = data
 
             time_diff = new_time - previous_time
-            prev_time = new_time
+            print(time_diff)
+            previous_time = new_time
             count_time += np.histogram(time_diff, bins_time)[0]
             data = [[bins_time[i], count_time[i]] for i in range(len(count_time))]
 
@@ -290,7 +290,7 @@ if __name__ == '__main__':
 
             while PAUSED:
                 track.visible = TRACK_VISIBLE
-                time.sleep(1)
+                time.sleep(time_diff)
 
             time.sleep(FRAME_RATE)
 
