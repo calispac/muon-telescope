@@ -137,6 +137,21 @@ def detector(n_layers, layer_spacing, detector_base, bar_width, bar_height,
     return bars_y, bars_x
 
 
+def compute_rate(time, count):
+
+    rate = np.average(time, weights=count)
+    rate = 1 / rate
+
+    return rate
+
+
+def compute_exponential_pdf(x, rate, amplitude):
+
+    temp = rate * np.exp(- rate * x)
+
+    return temp * amplitude
+
+
 if __name__ == '__main__':
 
     bar_width = 10
@@ -180,8 +195,7 @@ if __name__ == '__main__':
 
             PAUSED = False if PAUSED else True
 
-    scene = canvas(title='Détecteur de muons atmosphériques',
-                   width=1000,
+    scene = canvas(width=1000,
                    height=800, align='left')
 
     scene.waitfor("redraw")
@@ -213,7 +227,8 @@ if __name__ == '__main__':
     cosmic_muon = sphere(pos=vector(0, 0, 0), radius=10, color=color.purple)
     cosmic_muon.visible = False
 
-    # text_hits = text(text='', align='center', depth=0,  color=color.green)
+    text_hits = label(pos=vector(0, 0, 0), text='', xoffset=10, yoffset=20)
+    text_hits.visible = TRACK_VISIBLE
 
     green = vector(163/255, 235/255, 12/255)
 
@@ -233,16 +248,21 @@ if __name__ == '__main__':
                         ytitle='compte', align='right')
 
     bins_time = np.linspace(0, 5, num=100)
+    bins_time_diff = bins_time[1] - bins_time[0]
     count_time = np.zeros(len(bins_time) - 1)
-    bars_time = gvbars(delta=bins_time[1]-bins_time[0], color=color.blue,
+    bars_time = gvbars(delta=bins_time_diff, color=color.blue,
                        graph=histogram_2)
-    prev_time = 0
+    fit_curve = gcurve(color=color.red, graph=histogram_2)
 
     spheres = draw_spheres(radius=8, n_spheres=n_layers, color=color.blue)
 
+    n_events = 0
+
     while True:
 
-        for i, hits in enumerate(read.event_stream(filename=filename)):
+        for event_id, hits in enumerate(read.event_stream(filename=filename)):
+
+            n_events += 1
 
             new_time = hits[1]
             hits = np.array(hits[0])
@@ -252,7 +272,7 @@ if __name__ == '__main__':
 
             phrase = 'Coordonnées : \n'
 
-            if i == 0:
+            if event_id == 0:
 
                 previous_time = new_time
                 continue
@@ -266,8 +286,8 @@ if __name__ == '__main__':
                 bars_y[z][y].opacity = 0.8
                 phrase += '({}, {}, {}),\n'.format(x, y, z)
 
-            print(phrase)
-            # text_hits.text = phrase
+            phrase = phrase[:-2]
+            text_hits.text = phrase
 
             regressor = LinearRegression()
 
@@ -288,33 +308,49 @@ if __name__ == '__main__':
 
             pos = [vector(a[i, 0], a[i, 2], a[i, 1]) for i in range(len(a))]
 
+            highest_point = np.argmax(a[:, 2])
             track = curve(pos=pos, color=color.red)
+            text_hits.pos = pos[highest_point]
 
             vector_track = pos[1] - pos[0]
 
             theta = compute_theta(vector_track)
-
             histogram_theta += np.histogram(theta, bins)[0]
-
             data = np.stack((bins[:-1], histogram_theta), axis=-1)
-
             bars_theta.data = data
+            bars_theta.label = 'Total : {}'.format(n_events)
 
             time_diff = new_time - previous_time
             previous_time = new_time
             count_time += np.histogram(time_diff, bins_time)[0]
             data = np.stack((bins_time[:-1], count_time), axis=-1)
             bars_time.data = data
+            bars_time.label = 'Total : {}'.format(n_events)
+
+            x_fit = bins_time[:-1] + bins_time_diff / 2
+            rate = compute_rate(x_fit, count_time)
+            y_fit = compute_exponential_pdf(x_fit, rate, n_events)
+
+            data = np.stack((x_fit, y_fit), axis=-1)
+            fit_curve.data = data
+
+            fit_curve.label = 'Taux : {:02f} [Hz]'.format(1. / rate)
+            # fit_curve.legend = 'Rate'
+            # label(display=fit_curve.display, pos=(3, 2), text="P")
+            # histogram_2.title =
 
             track.visible = TRACK_VISIBLE
+            text_hits.visible = TRACK_VISIBLE
             scene.visible = True
 
             while PAUSED:
                 track.visible = TRACK_VISIBLE
+                text_hits.visible = TRACK_VISIBLE
                 time.sleep(time_diff)
 
             time.sleep(FRAME_RATE)
 
+            text_hits.visible = False
             scene.visible = False
             track.visible = False
 
@@ -327,4 +363,3 @@ if __name__ == '__main__':
                 spheres[z].visible = False
 
             scene.visible = True
-
