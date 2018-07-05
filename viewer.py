@@ -29,12 +29,11 @@ def compute_phi(direction):
     return phi
 
 
-def fit_track(hits, width_detector=1000):
+def fit_track(hits, track_length):
 
 
     epsilon = 5
-
-    width_detector += epsilon
+    track_length += epsilon
 
     x = hits[:, 0]
     y = hits[:, 1]
@@ -59,7 +58,7 @@ def fit_track(hits, width_detector=1000):
     # I use -7, 7 since the spread of the data is roughly 14
     # and we want it to have mean 0 (like the points we did
     # the svd on). Also, it's a straight line, so we only need 2 points.
-    linepts = vv[0] * np.mgrid[-1:2:1][:, np.newaxis] * width_detector / 2
+    linepts = vv[0] * np.mgrid[-1:2:1][:, np.newaxis] * track_length / 2
 
     # shift by the mean to get the line in the right place
     linepts += datamean
@@ -135,6 +134,8 @@ if __name__ == '__main__':
     n_bars = 32
     n_layers = 5
     opacity = 0.3
+    table_height = 30
+    space_table_detector = 5
 
     TRACK_VISIBLE = True
     PAUSED = False
@@ -178,11 +179,19 @@ if __name__ == '__main__':
     scene.fullscreen =True
     scene.visible = True
     scene.waitfor("draw_complete")
+    scene.autocenter = False
+
+    detector_base = vector(0, table_height + space_table_detector, 0)
+
+    detector_height = (2*bar_height) * n_layers + (bar_spacing + layer_spacing) * (n_layers - 1)
+    scene.center = vector(0, detector_base.y + detector_height/2, 0)
     # scene.stereo = 'redcyan'
 
-    table_height = 30
-    space_table_detector = 5
-    detector_base = vector(0, table_height + space_table_detector, 0)
+
+    track_length = ((bar_width + bar_spacing) * n_bars)**2
+    track_length = ((2*bar_height + bar_spacing + layer_spacing) * n_layers)**2
+    track_length = np.sqrt(track_length)
+
 
     bars_x, bars_y = detector(n_layers, layer_spacing, detector_base, bar_width,
                     bar_height, bar_length, bar_spacing, n_bars, opacity)
@@ -255,7 +264,7 @@ if __name__ == '__main__':
             scalled_hits[:, 1] = (scalled_hits[:, 1] - n_bars / 2) * (bar_width + bar_spacing)
             scalled_hits[:, 2] = scalled_hits[:, 2] * (bar_height + layer_spacing) + table_height + space_table_detector
 
-            a = fit_track(scalled_hits)
+            a = fit_track(scalled_hits, track_length)
 
             pos = [vector(a[i, 0], a[i, 2], a[i, 1]) for i in range(len(a))]
 
