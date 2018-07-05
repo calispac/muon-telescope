@@ -7,7 +7,6 @@ channels:
 - vpython
 dependencies:
 - jupyter
-- matplotlib
 - numpy
 - pandas
 - python=3.5

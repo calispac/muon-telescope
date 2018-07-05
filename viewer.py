@@ -2,7 +2,6 @@ from vpython import *
 import numpy as np
 from sklearn.linear_model import LinearRegression
 import read
-import matplotlib.pyplot as plt
 
 
 def compute_theta(direction):
