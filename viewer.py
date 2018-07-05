@@ -184,11 +184,11 @@ if __name__ == '__main__':
 
         elif event.key == 'down':
 
-            FRAME_RATE = FRAME_RATE * 1.25
+            FRAME_RATE = FRAME_RATE * 2
 
         elif event.key == 'up':
 
-            FRAME_RATE = FRAME_RATE * 0.75
+            FRAME_RATE = FRAME_RATE * 1/2
             FRAME_RATE = max(0, FRAME_RATE)
 
         elif len(event.key):
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     cosmic_muon.visible = False
 
     text_hits = label(pos=vector(0, 0, 0), text='', xoffset=10, yoffset=20)
-    text_hits.visible = TRACK_VISIBLE
+    # text_hits.visible = TRACK_VISIBLE
 
     green = vector(163/255, 235/255, 12/255)
 
@@ -238,14 +238,14 @@ if __name__ == '__main__':
     bins = np.rad2deg(bins)
     histogram_theta = np.zeros(len(bins) - 1)
 
-    histogram_1 = graph(xtitle='angle au zenith [deg]',
-                        ytitle='compte', align='right')
+    histogram_1 = graph(xtitle='angle au zenith [degrés]',
+                        ytitle='nombre', align='right')
 
     bars_theta = gvbars(delta=bins[1]-bins[0], color=color.blue,
                         graph=histogram_1)
 
     histogram_2 = graph(xtitle='intervalle de temps [secondes]',
-                        ytitle='compte', align='right')
+                        ytitle='nombre', align='right')
 
     bins_time = np.linspace(0, 5, num=100)
     bins_time_diff = bins_time[1] - bins_time[0]
@@ -334,23 +334,24 @@ if __name__ == '__main__':
             data = np.stack((x_fit, y_fit), axis=-1)
             fit_curve.data = data
 
-            fit_curve.label = 'Taux : {:02f} [Hz]'.format(1. / rate)
+            fit_curve.label = 'Taux : {:.2f} [Hz]'.format(1. / rate)
             # fit_curve.legend = 'Rate'
             # label(display=fit_curve.display, pos=(3, 2), text="P")
             # histogram_2.title =
 
+            scene.title = 'Vitesse de lecture : x {:.2f}'.format(1 / FRAME_RATE)
             track.visible = TRACK_VISIBLE
-            text_hits.visible = TRACK_VISIBLE
+            # text_hits.visible = TRACK_VISIBLE
             scene.visible = True
 
             while PAUSED:
                 track.visible = TRACK_VISIBLE
-                text_hits.visible = TRACK_VISIBLE
-                time.sleep(time_diff)
+                # text_hits.visible = TRACK_VISIBLE
+                time.sleep(0.5)
 
-            time.sleep(FRAME_RATE)
+            time.sleep(max(0, FRAME_RATE * time_diff))
 
-            text_hits.visible = False
+            # text_hits.visible = False
             scene.visible = False
             track.visible = False
 
