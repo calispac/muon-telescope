@@ -104,6 +104,19 @@ def layer(layer_position, bar_width=1, bar_height=1,
     return bars_x, bars_y
 
 
+def draw_spheres(radius, n_spheres, color=color.blue):
+
+    spheres = []
+
+    for i in range(n_spheres):
+
+        temp = sphere(pos=vector(0, 0, 0), color=color, radius=radius)
+        temp.visible = False
+        spheres.append(temp)
+
+    return spheres
+
+
 def detector(n_layers, layer_spacing, detector_base, bar_width, bar_height,
              bar_length, bar_spacing, n_bars, opacity):
 
@@ -134,11 +147,9 @@ if __name__ == '__main__':
     n_bars = 32
     n_layers = 5
     opacity = 0.3
-    table_height = 30
-    space_table_detector = 5
 
     TRACK_VISIBLE = True
-    PAUSED = False
+    PAUSED = True
     FRAME_RATE = 1
 
     filename = 'data/real_data_7.txt'
@@ -181,20 +192,20 @@ if __name__ == '__main__':
     scene.waitfor("draw_complete")
     scene.autocenter = False
 
-    detector_base = vector(0, table_height + space_table_detector, 0)
+    detector_base = vector(0, 0, 0)
 
-    detector_height = (2*bar_height) * n_layers + (bar_spacing + layer_spacing) * (n_layers - 1)
+    detector_height = (2*bar_height) * n_layers + \
+                      (bar_spacing + layer_spacing) * (n_layers - 1)
     scene.center = vector(0, detector_base.y + detector_height/2, 0)
     # scene.stereo = 'redcyan'
-
 
     track_length = ((bar_width + bar_spacing) * n_bars)**2
     track_length = ((2*bar_height + bar_spacing + layer_spacing) * n_layers)**2
     track_length = np.sqrt(track_length)
 
-
-    bars_x, bars_y = detector(n_layers, layer_spacing, detector_base, bar_width,
-                    bar_height, bar_length, bar_spacing, n_bars, opacity)
+    bars_x, bars_y = detector(n_layers, layer_spacing, detector_base,
+                              bar_width, bar_height, bar_length, bar_spacing,
+                              n_bars, opacity)
     # coordinates()
 
     table_center = vector(0, 0, 0)
@@ -226,6 +237,8 @@ if __name__ == '__main__':
     bars_time = gvbars(delta=bins_time[1]-bins_time[0], color=color.blue,
                        graph=histogram_2)
     prev_time = 0
+
+    spheres = draw_spheres(radius=8, n_spheres=n_layers, color=color.blue)
 
     while True:
 
@@ -260,9 +273,16 @@ if __name__ == '__main__':
 
             scalled_hits = hits.copy()
 
-            scalled_hits[:, 0] = (scalled_hits[:, 0] - n_bars / 2) * (bar_width + bar_spacing)
-            scalled_hits[:, 1] = (scalled_hits[:, 1] - n_bars / 2) * (bar_width + bar_spacing)
-            scalled_hits[:, 2] = scalled_hits[:, 2] * (bar_height + layer_spacing) + table_height + space_table_detector
+            scalled_hits[:, 0] = (scalled_hits[:, 0] - n_bars / 2 + 1) * (bar_width + bar_spacing)
+            scalled_hits[:, 1] = (scalled_hits[:, 1] - n_bars / 2 + 1) * (bar_width + bar_spacing)
+            scalled_hits[:, 2] = scalled_hits[:, 2] * layer_spacing + bar_height / 2
+
+            for hit, scalled_hit in zip(hits, scalled_hits):
+
+                pos = vector(scalled_hit[0], scalled_hit[2], scalled_hit[1])
+                z = hit[2]
+                spheres[z].pos = pos
+                spheres[z].visible = True
 
             a = fit_track(scalled_hits, track_length)
 
@@ -276,25 +296,17 @@ if __name__ == '__main__':
 
             histogram_theta += np.histogram(theta, bins)[0]
 
-            data = [[bins[i], histogram_theta[i]] for i in range(len(histogram_theta))]
-            data = np.array(data)
+            data = np.stack((bins[:-1], histogram_theta), axis=-1)
+
             bars_theta.data = data
 
             time_diff = new_time - previous_time
-            print(time_diff)
             previous_time = new_time
             count_time += np.histogram(time_diff, bins_time)[0]
-            data = [[bins_time[i], count_time[i]] for i in range(len(count_time))]
-
+            data = np.stack((bins_time[:-1], count_time), axis=-1)
             bars_time.data = data
 
-            # phi = compute_phi(vector_track)
-            # histogram_phi += np.histogram(phi, bins)[0]
-            # data[:, 1] = histogram_phi
-            # bars_phi.data = data
-
             track.visible = TRACK_VISIBLE
-
             scene.visible = True
 
             while PAUSED:
@@ -312,6 +324,7 @@ if __name__ == '__main__':
                 bars_y[z][y].color = color.white
                 bars_x[z][x].opactiy = opacity
                 bars_y[z][y].opacity = opacity
+                spheres[z].visible = False
 
             scene.visible = True
 
