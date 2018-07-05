@@ -38,12 +38,12 @@ python viewer.py
 
 ## Keyboard usage
 
-Delete --> Show/Hide track
-Up --> Increase frame rate
-Down --> Decrease frame rate
-Backspace --> Pause/Resume
+- `Delete` --> Show/Hide track
+- `Up` --> Increase frame rate
+- `Down` --> Decrease frame rate
+- `Backspace` --> Pause/Resume
 
 ## Mouse usage
 
-- Hold left click to rotate the frame
-- Scroll to zoom in/out
+- Hold left click --> rotate the frame
+- Scroll --> zoom in/out
