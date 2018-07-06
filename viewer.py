@@ -167,7 +167,7 @@ if __name__ == '__main__':
     PAUSED = True
     FRAME_RATE = 1
 
-    filename = 'data/real_data_7.txt'
+    filename = 'data/real_data_9.txt'
 
     center_y = (layer_spacing * n_layers) / 2
     center_z = ((bar_spacing + bar_width) * n_bars) / 2
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     histogram_2 = graph(xtitle='intervalle de temps [secondes]',
                         ytitle='nombre', align='right')
 
-    bins_time = np.linspace(0, 5, num=100)
+    bins_time = np.arange(0, 5 + 0.1, 0.1)
     bins_time_diff = bins_time[1] - bins_time[0]
     count_time = np.zeros(len(bins_time) - 1)
     bars_time = gvbars(delta=bins_time_diff, color=color.blue,
@@ -323,18 +323,18 @@ if __name__ == '__main__':
             time_diff = new_time - previous_time
             previous_time = new_time
             count_time += np.histogram(time_diff, bins_time)[0]
-            data = np.stack((bins_time[:-1], count_time), axis=-1)
+            data = np.stack((bins_time[:-1] + bins_time_diff / 2, count_time), axis=-1)
             bars_time.data = data
             bars_time.label = 'Total : {}'.format(n_events)
 
-            x_fit = bins_time[:-1] + bins_time_diff / 2
-            rate = compute_rate(x_fit, count_time)
-            y_fit = compute_exponential_pdf(x_fit, rate, n_events)
+            x_fit = np.linspace(bins_time[0], bins_time[-2], num=50) + bins_time_diff / 2
+            rate = compute_rate(bins_time[:-1] + bins_time_diff / 2, count_time)
+            y_fit = compute_exponential_pdf(x_fit, rate, n_events) * bins_time_diff
 
             data = np.stack((x_fit, y_fit), axis=-1)
             fit_curve.data = data
 
-            fit_curve.label = 'Taux : {:.2f} [Hz]'.format(1. / rate)
+            fit_curve.label = 'Taux : {:.2f} [Hz]'.format(rate)
             # fit_curve.legend = 'Rate'
             # label(display=fit_curve.display, pos=(3, 2), text="P")
             # histogram_2.title =
