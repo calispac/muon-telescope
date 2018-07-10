@@ -1,5 +1,7 @@
 The software is part of an outreach project for "Nuit de la Science" 2018, Geneva Switzerland.
 
+![Event Display](doc/viewer_screenshot.png)
+
 # Clone the project
 
 ```
